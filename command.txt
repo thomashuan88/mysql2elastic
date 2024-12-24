@@ -1,0 +1,69 @@
+pip install mysql-connector-python
+
+nohup python3 insert_orders.py > output.txt 2>&1 &
+
+curl -X GET http://localhost:8083/connector-plugins | jq
+curl -s GET http://localhost:8083/connectors | jq
+curl -s localhost:8084/connectors/elasticsearch-sink/status | jq
+curl -X DELETE http://localhost:8084/connectors/elasticsearch-sink
+
+ls -la /usr/share/confluent-hub-components/confluentinc-kafka-connect-elasticsearch/
+
+/etc/kafka/connect-distributed.properties
+
+curl -X PUT -H "Content-Type: application/json" --data '{
+    "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+    "tasks.max": "1",
+    "topics": "mysql.testdb,schema-changes.testdb",
+    "connection.url": "http://elasticsearch:9200",
+    "key.ignore": "true",
+    "schema.ignore": "true",
+    "consumer.override.auto.offset.reset": "earliest"
+}' http://localhost:8083/connectors/elasticsearch-sink/config
+
+
+		"connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+		"topics": "pg.public.user",
+		"connection.url": "es:9200",
+		"type.name": "_doc",
+		"key.ignore": true,
+		"value.converter": "org.apache.kafka.connect.json.JsonConverter"
+
+
+curl -X PUT -H "Content-Type: application/json" --data '{
+    "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+    "tasks.max": "1",
+    "database.hostname": "192.168.137.5",
+    "database.port": "3306",
+    "database.user": "root",
+    "database.password": "root",
+    "topic.prefix": "mysql",
+    "database.server.id": "2",
+    "database.server.name": "mysql_binlog",
+    "database.include.list": "testdb",
+    "database.history.kafka.bootstrap.servers": "kafka:9092",
+    "database.history.kafka.topic": "schema-changes.testdb",
+    "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+    "schema.history.internal.kafka.topic": "schema-history.testdb",
+    "snapshot.mode": "initial"
+}' http://localhost:8083/connectors/mysql-connector/config
+
+
+
+__consumer_offsets
+debezium_configs
+debezium_offsets
+debezium_status
+es_configs
+es_offsets
+es_status
+mysql
+mysql.orders
+mysql.testdb
+mysql.testdb.orders
+schema-changes.testdb
+schema-history.testdb
+
+kafka-console-consumer --bootstrap-server kafka:9092 --topic mysql.orders --from-beginning
+
+kafka-topics --list --bootstrap-server kafka:9092
