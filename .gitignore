@@ -1,4 +1,3 @@
 debezium-*/
 kafka_data/*
-mysql/*
 output.txt
