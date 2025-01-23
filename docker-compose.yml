@@ -11,14 +11,16 @@ services:
       - "3306:3306"
     volumes:
       - mysql_data:/var/lib/mysql
+      - ./mysql:/tmp/data
     command:
-      --default-authentication-plugin=mysql_native_password
+      # --default-authentication-plugin=mysql_native_password
       --binlog-format=ROW
       --server-id=1
       --log-bin=mysql-bin
-      --binlog-do-db=testdb
-      --gtid-mode=ON
-      --enforce-gtid-consistency=ON
+      # --binlog-row-image=FULL
+      # --binlog-do-db=mv_datas
+      # --gtid-mode=ON
+      # --enforce-gtid-consistency=ON
 
   kafka:
     image: confluentinc/cp-kafka:7.5.0
@@ -48,6 +50,18 @@ services:
     volumes:
       - ./kafka_data:/kafka/data:rw
 
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.8.0
+    hostname: schema-registry
+    container_name: schema-registry
+    depends_on:
+      - kafka
+    ports:
+      - "8081:8081"
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: "PLAINTEXT://kafka:9092"
+
   kafka-connect:
     image: debezium/connect:2.4
     container_name: kafka-connect
@@ -59,7 +73,7 @@ services:
     environment:
       TZ: Asia/Singapore
       BOOTSTRAP_SERVERS: kafka:9092
-      GROUP_ID: 1
+      GROUP_ID: debezium-connect
       CONFIG_STORAGE_TOPIC: debezium_configs
       OFFSET_STORAGE_TOPIC: debezium_offsets
       STATUS_STORAGE_TOPIC: debezium_status
@@ -69,6 +83,50 @@ services:
       CONNECT_CONSUMER_INTERCEPTORS: io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor
     ports:
       - "8083:8083"
+
+  kafka-ui:
+    container_name: kafka-ui
+    image: provectuslabs/kafka-ui:latest
+    ports:
+      - 8080:8080
+    environment:
+      DYNAMIC_CONFIG_ENABLED: 'true'
+    volumes:
+      - ./kafka-ui/config.yml:/etc/kafkaui/dynamic_config.yaml
+
+  ksqldb-server:
+    image: confluentinc/cp-ksqldb-server:7.8.0
+    volumes:
+      - "./connect:/usr/share/kafka/plugins/"
+    environment:
+      KSQL_BOOTSTRAP_SERVERS: kafka:9092
+      KSQL_LISTENERS: http://0.0.0.0:8088
+      KSQL_KSQL_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      KSQL_KSQL_LOGGING_PROCESSING_STREAM_AUTO_CREATE: "true"
+      KSQL_KSQL_LOGGING_PROCESSING_TOPIC_AUTO_CREATE: "true"
+      KSQL_CONNECT_GROUP_ID: "ksql-connect-cluster"
+      KSQL_CONNECT_BOOTSTRAP_SERVERS: "kafka:9092"
+      KSQL_CONNECT_REST_ADVERTISED_HOST_NAME: "kafka-connect"
+      KSQL_CONNECT_REST_PORT: "8083"
+      KSQL_CONFLUENT_SUPPORT_METRICS_ENABLE: "false"
+      KSQL_CONNECT_KEY_CONVERTER: "org.apache.kafka.connect.storage.StringConverter"
+      KSQL_CONNECT_VALUE_CONVERTER: "io.confluent.connect.avro.AvroConverter"
+      KSQL_CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: "http://schema-registry:8081"
+      KSQL_CONNECT_CONFIG_STORAGE_TOPIC: "_ksql-connect-configs"
+      KSQL_CONNECT_OFFSET_STORAGE_TOPIC: "_ksql-connect-offsets"
+      KSQL_CONNECT_STATUS_STORAGE_TOPIC: "_ksql-connect-statuses"
+      KSQL_CONNECT_CONFIG_STORAGE_REPLICATION_FACTOR: 1
+      KSQL_CONNECT_OFFSET_STORAGE_REPLICATION_FACTOR: 1
+      KSQL_CONNECT_STATUS_STORAGE_REPLICATION_FACTOR: 1
+      KSQL_CONNECT_PLUGIN_PATH: "/usr/share/kafka/plugins"
+    ports:
+      - "8088:8088"
+
+  # ksql-cli:
+  #   image: confluentinc/cp-ksql-cli:7.5.0
+  #   depends_on:
+  #     - ksqldb-server
+  #   entrypoint: ["sh", "-c", "sleep 10; ksql http://ksqldb-server:8088"]
 
   # kafka-connect-es:
   #   build:

@@ -1,0 +1,85 @@
+select *, IF( mv_video.cover_h != '',
+    IF( SUBSTR(mv_video.cover_h, 1, 4) = 'http',
+        mv_video.cover_h,
+        CONCAT('www.24zbw.com/', TRIM(LEADING '/' FROM mv_video.cover_h))
+    ),
+    mv_video.cover_h
+) AS cover_h_full, IF( mv_video.cover_v != '',
+    IF( SUBSTR(mv_video.cover_v, 1, 4) = 'http',
+        mv_video.cover_v,
+        CONCAT('www.24zbw.com/', TRIM(LEADING '/' FROM mv_video.cover_v))
+    ),
+    mv_video.cover_v
+) AS cover_v_full from mv_video where status = ? order by mv_video.id asc limit 100 offset 400 [0,"3.63 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select * from mv_video_channel where mv_video_channel.id in (1, 2, 3, 4, 5, 7) ["0.22 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select mv_video_channel_category.*, mv_video_category_mapper.video_id as pivot_video_id, mv_video_category_mapper.category_id as pivot_category_id, mv_video_category_mapper.status as pivot_status from mv_video_channel_category inner join mv_video_category_mapper on mv_video_channel_category.id = mv_video_category_mapper.category_id where mv_video_category_mapper.video_id in (1576, 1577, 1578, 1579, 1580, 1581, 1582, 1583, 1584, 1585, 1586, 1587, 1588, 1589, 1593, 1594, 1596, 1597, 1599, 1600, 1602, 1605, 1614, 1615, 1619, 1624, 1625, 1626, 1628, 1629, 1630, 1631, 1632, 1643, 1644, 1646, 1647, 1648, 1649, 1652, 1654, 1655, 1656, 1657, 1658, 1659, 1660, 1661, 1662, 1663, 1664, 1665, 1666, 1667, 1668, 1669, 1670, 1671, 1672, 1673, 1674, 1675, 1677, 1679, 1680, 1681, 1682, 1683, 1684, 1685, 1686, 1688, 1690, 1692, 1694, 1695, 1696, 1700, 1702, 1703, 1704, 1705, 1706, 1707, 1708, 1709, 1710, 1711, 1712, 1713, 1714, 1715, 1716, 1717, 1718, 1719, 1720, 1721, 1818, 1819) ["0.77 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select mv_actor.*, mv_video_actor.main_id as pivot_main_id, mv_video_actor.relation_id as pivot_relation_id, mv_video_actor.character as pivot_character from mv_actor inner join mv_video_actor on mv_actor.id = mv_video_actor.relation_id where mv_video_actor.position = ? and mv_video_actor.main_id in (1576, 1577, 1578, 1579, 1580, 1581, 1582, 1583, 1584, 1585, 1586, 1587, 1588, 1589, 1593, 1594, 1596, 1597, 1599, 1600, 1602, 1605, 1614, 1615, 1619, 1624, 1625, 1626, 1628, 1629, 1630, 1631, 1632, 1643, 1644, 1646, 1647, 1648, 1649, 1652, 1654, 1655, 1656, 1657, 1658, 1659, 1660, 1661, 1662, 1663, 1664, 1665, 1666, 1667, 1668, 1669, 1670, 1671, 1672, 1673, 1674, 1675, 1677, 1679, 1680, 1681, 1682, 1683, 1684, 1685, 1686, 1688, 1690, 1692, 1694, 1695, 1696, 1700, 1702, 1703, 1704, 1705, 1706, 1707, 1708, 1709, 1710, 1711, 1712, 1713, 1714, 1715, 1716, 1717, 1718, 1719, 1720, 1721, 1818, 1819) [0,"0.78 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select mv_actor.*, mv_video_actor.main_id as pivot_main_id, mv_video_actor.relation_id as pivot_relation_id from mv_actor inner join mv_video_actor on mv_actor.id = mv_video_actor.relation_id where mv_video_actor.position = ? and mv_video_actor.main_id in (1576, 1577, 1578, 1579, 1580, 1581, 1582, 1583, 1584, 1585, 1586, 1587, 1588, 1589, 1593, 1594, 1596, 1597, 1599, 1600, 1602, 1605, 1614, 1615, 1619, 1624, 1625, 1626, 1628, 1629, 1630, 1631, 1632, 1643, 1644, 1646, 1647, 1648, 1649, 1652, 1654, 1655, 1656, 1657, 1658, 1659, 1660, 1661, 1662, 1663, 1664, 1665, 1666, 1667, 1668, 1669, 1670, 1671, 1672, 1673, 1674, 1675, 1677, 1679, 1680, 1681, 1682, 1683, 1684, 1685, 1686, 1688, 1690, 1692, 1694, 1695, 1696, 1700, 1702, 1703, 1704, 1705, 1706, 1707, 1708, 1709, 1710, 1711, 1712, 1713, 1714, 1715, 1716, 1717, 1718, 1719, 1720, 1721, 1818, 1819) [1,"0.47 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select mv_video_tag.*, mv_video_tag_mapper.main_id as pivot_main_id, mv_video_tag_mapper.relation_id as pivot_relation_id from mv_video_tag inner join mv_video_tag_mapper on mv_video_tag.id = mv_video_tag_mapper.relation_id where mv_video_tag_mapper.main_id = ? [1576,"0.24 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select mv_video_tag.*, mv_video_tag_mapper.main_id as pivot_main_id, mv_video_tag_mapper.relation_id as pivot_relation_id from mv_video_tag inner join mv_video_tag_mapper on mv_video_tag.id = mv_video_tag_mapper.relation_id where mv_video_tag_mapper.main_id = ? [1577,"0.19 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select mv_video_tag.*, mv_video_tag_mapper.main_id as pivot_main_id, mv_video_tag_mapper.relation_id as pivot_relation_id from mv_video_tag inner join mv_video_tag_mapper on mv_video_tag.id = mv_video_tag_mapper.relation_id where mv_video_tag_mapper.main_id = ? [1578,"0.21 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select mv_video_tag.*, mv_video_tag_mapper.main_id as pivot_main_id, mv_video_tag_mapper.relation_id as pivot_relation_id from mv_video_tag inner join mv_video_tag_mapper on mv_video_tag.id = mv_video_tag_mapper.relation_id where mv_video_tag_mapper.main_id = ? [1579,"0.2 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select mv_video_tag.*, mv_video_tag_mapper.main_id as pivot_main_id, mv_video_tag_mapper.relation_id as pivot_relation_id from mv_video_tag inner join mv_video_tag_mapper on mv_video_tag.id = mv_video_tag_mapper.relation_id where mv_video_tag_mapper.main_id = ? [1580,"0.19 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select mv_video_tag.*, mv_video_tag_mapper.main_id as pivot_main_id, mv_video_tag_mapper.relation_id as pivot_relation_id from mv_video_tag inner join mv_video_tag_mapper on mv_video_tag.id = mv_video_tag_mapper.relation_id where mv_video_tag_mapper.main_id = ? [1581,"0.19 ms"] 
+[2024-12-26 02:03:09] admin-api.INFO: select mv_video_tag.*, mv_video_tag_mapper.main_id as pivot_main_id, mv_video_tag_mapper.relation_id as pivot_relation_id from mv_video_tag inner join mv_video_tag_mapper on mv_video_tag.id = mv_video_tag_mapper.relation_id where mv_video_tag_mapper.main_id = ?
+
+
+mv_video
+mv_video_channel
+mv_video_category_mapper
+mv_video_channel_category
+mv_video_actor 
+mv_actor
+mv_video_tag_mapper 
+mv_video_tag 
+,
+
+SELECT 
+    mv_video.*, 
+    IF(mv_video.cover_h != '', 
+        IF(SUBSTR(mv_video.cover_h, 1, 4) = 'http', 
+            mv_video.cover_h, 
+            CONCAT('www.24zbw.com/', TRIM(LEADING '/' FROM mv_video.cover_h))
+        ), 
+        mv_video.cover_h
+    ) AS cover_h_full, 
+    IF(mv_video.cover_v != '', 
+        IF(SUBSTR(mv_video.cover_v, 1, 4) = 'http', 
+            mv_video.cover_v, 
+            CONCAT('www.24zbw.com/', TRIM(LEADING '/' FROM mv_video.cover_v))
+        ), 
+        mv_video.cover_v
+    ) AS cover_v_full,
+    mv_video_channel.*, 
+    mv_video_channel_category.*, 
+    mv_video_category_mapper.video_id AS pivot_video_id, 
+    mv_video_category_mapper.category_id AS pivot_category_id, 
+    mv_video_category_mapper.status AS pivot_status, 
+    mv_actor.*, 
+    mv_video_actor.main_id AS pivot_main_id, 
+    mv_video_actor.relation_id AS pivot_relation_id, 
+    mv_video_actor.character AS pivot_character, 
+    mv_video_tag.*, 
+    mv_video_tag_mapper.main_id AS pivot_main_id, 
+    mv_video_tag_mapper.relation_id AS pivot_relation_id
+FROM 
+    mv_video
+LEFT JOIN 
+    mv_video_channel ON mv_video_channel.id IN (1, 2, 3, 4, 5, 7)
+LEFT JOIN 
+    mv_video_category_mapper ON mv_video_category_mapper.video_id = mv_video.id
+LEFT JOIN 
+    mv_video_channel_category ON mv_video_channel_category.id = mv_video_category_mapper.category_id
+LEFT JOIN 
+    mv_video_actor ON mv_video_actor.main_id = mv_video.id
+LEFT JOIN 
+    mv_actor ON mv_actor.id = mv_video_actor.relation_id
+LEFT JOIN 
+    mv_video_tag_mapper ON mv_video_tag_mapper.main_id = mv_video.id
+LEFT JOIN 
+    mv_video_tag ON mv_video_tag.id = mv_video_tag_mapper.relation_id
+WHERE 
+    mv_video.status = ? 
+ORDER BY 
+    mv_video.id ASC 
+LIMIT 100 OFFSET 400;

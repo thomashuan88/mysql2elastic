@@ -1,0 +1,17 @@
+{
+  "name": "elasticsearch-movies-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.elasticsearch.ElasticsearchSinkConnector",
+    "tasks.max": "1",
+    "topics": "MOVIES_TRANSFORMED",
+    "connection.url": "http://elasticsearch:9200",
+    "type.name": "_doc",
+    "key.ignore": "true",
+    "schema.ignore": "true",
+    "behavior.on.null.values": "delete",
+    "write.method": "upsert",
+    "transforms": "ExtractField",
+    "transforms.ExtractField.type": "org.apache.kafka.connect.transforms.ExtractField$Value",
+    "transforms.ExtractField.field": "after"
+  }
+}

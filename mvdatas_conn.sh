@@ -1,0 +1,97 @@
+curl -X POST -H "Content-Type: application/json" --data '{
+    "name": "mysql-connector",
+    "config": {
+        "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+        "tasks.max": "1",
+        "database.hostname": "mysql",
+        "database.port": "3306",
+        "database.user": "root",
+        "database.password": "root",
+        "database.server.id": "222",
+        "database.server.name": "test_server", 
+        "database.include.list": "mv_datas", 
+        "table.include.list": "mv_datas.mv_video,mv_datas.mv_video_channel,mv_datas.mv_video_category_mapper,mv_datas.mv_video_channel_category,mv_datas.mv_video_actor,mv_datas.mv_actor,mv_datas.mv_video_tag_mapper,mv_datas.mv_video_tag", 
+        "database.history.kafka.bootstrap.servers": "kafka:9092",
+        "database.history.kafka.topic": "schema-changes.mv_datas",
+        "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+        "schema.history.internal.kafka.topic": "schema-history.mv_datas",
+        "topic.prefix": "dbz_mysql", 
+        "include.schema.changes": "true", 
+        "snapshot.mode": "initial", 
+        "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+        "key.converter.schemas.enable": "false",
+        "value.converter.schemas.enable": "false"
+    }
+}' http://localhost:8083/connectors
+
+# "topic.prefix": "mysql",
+
+        # "connector.class": "io.debezium.connector.mysql.MySqlConnector",
+        # "tasks.max": "1",
+        # "database.hostname": "192.168.137.5",
+        # "database.port": "3306",
+        # "database.user": "root",
+        # "database.password": "root",
+        # "database.server.id": "222",
+        # "database.server.name": "test_server",
+        # "database.include.list": "mv_datas",
+        # "table.include.list": "mv_datas.mv_video,mv_datas.mv_video_channel,mv_datas.mv_video_category_mapper,mv_datas.mv_video_channel_category,mv_datas.mv_video_actor,mv_datas.mv_actor,mv_datas.mv_video_tag_mapper,mv_datas.mv_video_tag",
+        # "database.history.kafka.bootstrap.servers": "kafka:9092",
+        # "database.history.kafka.topic": "schema-changes.mv_datas",
+        # "schema.history.internal.kafka.bootstrap.servers": "kafka:9092",
+        # "schema.history.internal.kafka.topic": "schema-history.mv_datas",
+        # "snapshot.mode": "initial"
+
+CREATE STREAM mv_video_raw (
+    id BIGINT,
+    relation_id BIGINT,
+    title VARCHAR,
+    sub_title VARCHAR,
+    third_title VARCHAR,
+    third_title_type INT,
+    release_at DATE,
+    year INT,
+    video_language VARCHAR,
+    status INT,
+    brief VARCHAR,
+    cover_h VARCHAR,
+    cover_v VARCHAR,
+    channel_id INT,
+    country VARCHAR,
+    show_category VARCHAR,
+    show_tag VARCHAR,
+    total_episodes INT,
+    last_episodes VARCHAR,
+    is_end INT,
+    show_director VARCHAR,
+    show_actors VARCHAR,
+    ranking VARCHAR,
+    vip INT,
+    play_point INT,
+    src_id VARCHAR,
+    src_tv_id VARCHAR,
+    src_type INT,
+    src_cover_h VARCHAR,
+    src_cover_v VARCHAR,
+    src_score INT,
+    src_views INT,
+    total_views INT,
+    total_score INT,
+    created_at BIGINT,
+    updated_at BIGINT,
+    published_at BIGINT,
+    __op VARCHAR,
+    __table VARCHAR,
+    __source_ts_ms BIGINT,
+    __deleted VARCHAR
+) WITH (
+    KAFKA_TOPIC = 'mysql.mv_datas.mv_video',
+    VALUE_FORMAT = 'JSON',
+    TIMESTAMP = 'updated_at'
+);
+
+CREATE STREAM mv_video WITH (
+    kafka_topic = 'mysql.mv_datas.mv_video',
+    value_format = 'avro'
+);

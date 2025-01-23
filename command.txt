@@ -6,6 +6,9 @@ curl -X GET http://localhost:8083/connector-plugins | jq
 curl -s GET http://localhost:8083/connectors | jq
 curl -s localhost:8084/connectors/elasticsearch-sink/status | jq
 curl -X DELETE http://localhost:8084/connectors/elasticsearch-sink
+curl -X DELETE http://localhost:8083/connectors/mysql-connector
+curl -s localhost:8083/connectors/mysql-connector/status | jq
+curl -s localhost:8083/connectors/elasticsearch-sink/status | jq
 
 ls -la /usr/share/confluent-hub-components/confluentinc-kafka-connect-elasticsearch/
 
@@ -65,5 +68,225 @@ schema-changes.testdb
 schema-history.testdb
 
 kafka-console-consumer --bootstrap-server kafka:9092 --topic mysql.orders --from-beginning
+kafka-topics --delete --topic schema-history.testdb --bootstrap-server kafka:9092
+kafka-configs --bootstrap-server localhost --describe --topic dbz_mysql.mv_datas.mv_video (check retention)
 
 kafka-topics --list --bootstrap-server kafka:9092
+
+mysql -u root -p mv_datas < /tmp/data/mv_datas.sql
+
+
+curl -X PUT "http://localhost:9200/movies" -H 'Content-Type: application/json' -d '{
+    "mappings": {
+        "properties": {
+            "title": {
+                "type": "text"
+            },
+            "description": {
+                "type": "text"
+            },
+            "tags": {
+                "type": "keyword"  // Use `text` if you need full-text search
+            }
+        }
+    }
+}'
+
+
+kafka-console-consumer --bootstrap-server kafka:9092 \
+  --topic dbz_mysql.mv_datas.mv_video \
+  --from-beginning \
+  --property print.key=true \
+  --property key.separator="|"
+
+
+
+PUT /movies
+{
+  "mappings": {
+    "properties": {
+      "id": { "type": "integer" },
+      "title": { "type": "text" },
+      "sub_title": { "type": "text" },
+      "third_title": { "type": "text" },
+      "third_title_type": { "type": "text" },
+      "release_at": { "type": "date" },
+      "year": { "type": "integer" },
+      "video_language": { "type": "text" },
+      "status": { "type": "integer" },
+      "brief": { "type": "text" },
+      "cover_h": { "type": "text" },
+      "cover_v": { "type": "text" },
+      "channel_id": { "type": "integer" },
+      "country": { "type": "text" },
+      "show_category": { "type": "keyword" },
+      "show_tags": { "type": "keyword" },
+      "total_episodes": { "type": "integer" },
+      "last_episodes": { "type": "text" },
+      "show_directors": { "type": "text" },
+      "show_actors": { "type": "keyword" },
+      "src_cover_h": { "type": "text" },
+      "src_cover_v": { "type": "text" },
+      "src_score": { "type": "integer" },
+      "src_views": { "type": "integer" },
+      "total_views": { "type": "integer" },
+      "total_score": { "type": "integer" }
+    }
+  }
+}
+
+curl -X PUT "http://localhost:9200/movies" -H 'Content-Type: application/json' -d '{
+  "mappings": {
+    "properties": {
+      "id": { "type": "integer" },
+      "title": { "type": "text" },
+      "sub_title": { "type": "text" },
+      "third_title": { "type": "text" },
+      "third_title_type": { "type": "text" },
+      "release_at": { "type": "date" },
+      "year": { "type": "integer" },
+      "video_language": { "type": "text" },
+      "status": { "type": "integer" },
+      "brief": { "type": "text" },
+      "cover_h": { "type": "text" },
+      "cover_v": { "type": "text" },
+      "channel_id": { "type": "integer" },
+      "country": { "type": "text" },
+      "show_category": { "type": "keyword" },
+      "show_tags": { "type": "keyword" },
+      "total_episodes": { "type": "integer" },
+      "last_episodes": { "type": "text" },
+      "show_directors": { "type": "text" },
+      "show_actors": { "type": "keyword" },
+      "src_cover_h": { "type": "text" },
+      "src_cover_v": { "type": "text" },
+      "src_score": { "type": "integer" },
+      "src_views": { "type": "integer" },
+      "total_views": { "type": "integer" },
+      "total_score": { "type": "integer" }
+    }
+  }
+}'
+
+https://github.com/debezium/debezium-examples/blob/main/end-to-end-demo/jdbc-sink.json
+
+CREATE STREAM movies_raw_stream WITH (
+  KAFKA_TOPIC='mysql.mv_datas.mv_video',
+  VALUE_FORMAT='AVRO'
+);
+
+CREATE STREAM movies_raw_stream WITH (
+  KAFKA_TOPIC='mysql.mv_datas.mv_video',
+  VALUE_FORMAT='AVRO',
+  key_format = 'KAFKA',
+  key_schema_id = null,
+  timestamp_format = 'yyyy-MM-dd''T''HH:mm:ss.SSS'
+);
+
+CREATE STREAM movies_transformed_stream AS
+SELECT
+    id,
+    title,
+    sub_title,
+    third_title,
+    third_title_type,
+    release_at,
+    year,
+    video_language,
+    status,
+    brief,
+    cover_h,
+    cover_v,
+    channel_id,
+    country,
+    total_episodes,
+    last_episodes,
+    show_director,
+    src_cover_h,
+    src_cover_v,
+    src_score,
+    src_views,
+    total_views,
+    total_score,
+    SPLIT(SHOW_CATEGORY, ',') AS show_category_array,
+    SPLIT(SHOW_TAG, ',') AS show_tag_array,
+    SPLIT(SHOW_ACTORS, '/') AS show_actors_array,
+    __OP,
+    __TABLE,
+    __SOURCE_TS_MS,
+    __DELETED
+FROM movies_raw_stream 
+EMIT CHANGES;
+
+
+CREATE STREAM movies_transformed_with_keys AS
+SELECT
+    COALESCE(CAST(id AS STRING), 'default_key') AS id,
+    title,
+    sub_title,
+    third_title,
+    third_title_type,
+    release_at,
+    year,
+    video_language,
+    status,
+    brief,
+    cover_h,
+    cover_v,
+    channel_id,
+    country,
+    total_episodes,
+    last_episodes,
+    show_director,
+    src_cover_h,
+    src_cover_v,
+    src_score,
+    src_views,
+    total_views,
+    total_score,
+    SPLIT(SHOW_CATEGORY, ',') AS show_category_array,
+    SPLIT(SHOW_TAG, ',') AS show_tag_array,
+    SPLIT(SHOW_ACTORS, '/') AS show_actors_array
+FROM movies_raw_stream
+EMIT CHANGES;
+
+SHOW_CATEGORY
+
+CREATE STREAM MOVIES_WITH_KEY
+WITH (kafka_topic='movies_with_key', key_format='KAFKA') AS
+SELECT *
+FROM MOVIES_RAW_STREAM
+PARTITION BY ID;
+
+
+mv_video_stream
+
+CREATE STREAM movies_transformed_with_keys AS
+SELECT
+    id,
+    title,
+    sub_title,
+    third_title,
+    third_title_type,
+    release_at,
+    year,
+    video_language,
+    status,
+    brief,
+    cover_h,
+    cover_v,
+    channel_id,
+    country,
+    total_episodes,
+    last_episodes,
+    show_director,
+    SPLIT(SHOW_CATEGORY, ',') AS show_category_array,
+    SPLIT(SHOW_TAG, ',') AS show_tag_array,
+    SPLIT(SHOW_ACTORS, '/') AS show_actors_array,
+    op,
+    ts_ms,  
+    __deleted
+FROM mv_video_stream
+EMIT CHANGES;
+
+describe MOVIES_WITH_KEY extended;

@@ -1,0 +1,76 @@
+        kconnect:
+        image: debezium/connect:2.5
+        container_name: kconnect
+        ports:
+            - 8083:8083
+            - 9012:9012
+        environment:
+            CONFIG_STORAGE_TOPIC: my_connect_configs
+            OFFSET_STORAGE_TOPIC: my_connect_offsets
+            STATUS_STORAGE_TOPIC: my_connect_statuses
+            BOOTSTRAP_SERVERS: kafka-1:29092,kafka-2:29093,kafka-3:29094
+            KAFKA_CONNECT_PLUGINS_DIR: /kafka/connect/
+            CONNECT_KEY_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+            CONNECT_VALUE_CONVERTER_SCHEMA_REGISTRY_URL: http://schema-registry:8081
+        depends_on:
+            - kafka-1
+            - kafka-2
+            - kafka-3
+        volumes:
+            #When you follow debezium documentation
+            - ./lib-registry-doc-debezium:/kafka/connect/libs
+            #- ./confluentinc-kafka-connect-avro-converter-7.5.3/lib:/kafka/connect/libs
+
+{
+    "name": "debezium-connector-postgres",
+    "config": {
+        "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+        "database.hostname": "db",
+        "database.port": "5432",
+        "database.user": "postgres",
+        "database.password": "postgres",
+        "database.dbname" : "postgres",
+        "database.whitelist": "connect_schema",
+        "table.include.list": "connect_schema.students",
+        "topic.prefix": "my_connect_debezium",
+        "plugin.name": "pgoutput",
+        "key.converter.schema.registry.url": "http://schema-registry:8081",
+        "value.converter.schema.registry.url": "http://schema-registry:8081",
+        "key.converter": "io.confluent.connect.avro.AvroConverter",
+        "value.converter": "io.confluent.connect.avro.AvroConverter"
+    }
+}
+
+
+create stream users (id int key, username varchar, age int, age int) with (kafka_topic='users', value_format='json', partitions=3, replicas=1);
+SET 'auto.offset.reset' = 'earliest';
+print users;
+
+############
+insert into users (id, username, age) values (1, 'bob', 25);
+insert into users (id, username, age) values (2, 'alice', 35);
+insert into users (id, username, age) values (3, 'toto', 45);
+############
+
+select 'this is rahul, good morning' + username from users emit changes;
+show queries; // show running queries
+
+create type ADDRESS as struct<country string, province string, city string>; // create a custom type
+
+
+--DDL
+create table EMPLOYEE (
+    EMP_ID STRING PRIMARY KEY,
+    NAME STRING,
+    AGE INT,
+    HEIGH DECIMAL(3,2),
+    FRIENDS ARRAY<STRING>,
+    CHILDREN MAP<STRING,INT>,
+    ADDRESS ADDRESS
+) WITH (kafka_topic='employee', value_format='json', PARTITIONS=3);
+
+// after run this create , topic 'employee' will be created
+
+--DML
+insert into EMPLOYEE(emp_id, name, age, heigh, friends, children, address)
+values ('E001', 'John', 30, 188.5, Array['Alex','Alice'], Map('X':=3, 'Y':=6), STRUCT(COUNTRY:='CN', PROVINCE:='GD', CITY:= 'GZ'));

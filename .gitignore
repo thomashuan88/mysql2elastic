@@ -1,3 +1,4 @@
 debezium-*/
 kafka_data/*
 output.txt
+**/*.sql

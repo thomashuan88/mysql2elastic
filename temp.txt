@@ -1,0 +1,43 @@
+CREATE STREAM MOVIES_FLAT AS
+SELECT 
+    ID AS id,
+    TITLE AS title,
+    SUB_TITLE AS sub_title,
+    THIRD_TITLE AS third_title,
+    THIRD_TITLE_TYPE AS third_title_type,
+    RELEASE_AT AS release_at,
+    YEAR AS year,
+    VIDEO_LANGUAGE AS video_language,
+    STATUS AS status,
+    BRIEF AS brief,
+    COVER_H AS cover_h,
+    COVER_V AS cover_v,
+    CHANNEL_ID AS channel_id,
+    COUNTRY AS country,
+    SPLIT(COALESCE(SHOW_CATEGORY, ''), ',') AS show_category,
+    SPLIT(COALESCE(SHOW_TAG, ''), ',') AS show_tags,
+    TOTAL_EPISODES AS total_episodes,
+    LAST_EPISODES AS last_episodes,
+    IS_END AS is_end,
+    SHOW_DIRECTOR AS show_director,
+    SPLIT(COALESCE(SHOW_ACTORS, ''), '/') AS show_actors,
+    SRC_COVER_H AS src_cover_h,
+    SRC_COVER_V AS src_cover_v,
+    SRC_SCORE AS src_score,
+    SRC_VIEWS AS src_views,
+    TOTAL_VIEWS AS total_views,
+    TOTAL_SCORE AS total_score
+FROM MOVIES_RAW;
+
+CREATE STREAM TEST_STREAM AS 
+SELECT * 
+FROM MOVIES_RAW;
+
+CREATE STREAM MOVIES_RAW (
+    after after_type,
+    OP VARCHAR,
+    TS_MS BIGINT
+) WITH (
+    KAFKA_TOPIC='dbz_mysql.mv_datas.mv_video', 
+    VALUE_FORMAT='JSON' 
+);
